@@ -16,7 +16,7 @@ using namespace o2::nd_regression;
 
 ClassImp(o2::nd_regression::NDRegression);
 
-TObjArray *NDRegression::fgVisualCorrection = 0;
+TObjArray* NDRegression::fgVisualCorrection = 0;
 
 NDRegression::NDRegression(const char* name, const char* title) : TNamed(name, title)
 {
@@ -472,15 +472,16 @@ Bool_t NDRegression::MakeFit(TTree* tree, const char* formulaVal, const char* fo
   return kTRUE;
 }
 
-Int_t NDRegression::GetVisualCorrectionIndex(const char *corName) {
+Int_t NDRegression::GetVisualCorrectionIndex(const char* corName)
+{
   //
   return TMath::Hash(corName) % 1000000; /// BUGGY hash in the TMath
   // return TString(corName).Hash()%1000000; /// also buggy - even more clashes
 }
 
-
-void NDRegression::AddVisualCorrection(NDRegression *corr,
-                                       Int_t position) {
+void NDRegression::AddVisualCorrection(NDRegression* corr,
+                                       Int_t position)
+{
   /// make correction available for visualization using
   /// TFormula, TFX and TTree::Draw
   /// important in order to check corrections and also compute dervied variables
@@ -503,12 +504,13 @@ void NDRegression::AddVisualCorrection(NDRegression *corr,
   fgVisualCorrection->AddAt(corr, position);
 }
 
-NDRegression *
-NDRegression::GetVisualCorrection(Int_t position) {
+NDRegression*
+  NDRegression::GetVisualCorrection(Int_t position)
+{
   /// Get visula correction registered at index=position
   return fgVisualCorrection
-             ? (NDRegression *)fgVisualCorrection->At(position)
-             : 0;
+           ? (NDRegression*)fgVisualCorrection->At(position)
+           : 0;
 }
 
 Double_t NDRegression::GetCorrND(Double_t index, Double_t par0)
@@ -559,13 +561,13 @@ Double_t NDRegression::GetCorrNDError(Double_t index, Double_t par0,
   return corr->EvalError(par);
 }
 
-
 Double_t NDRegression::GetCorrND(Double_t index, Double_t par0,
-                                         Double_t par1, Double_t par2) {
+                                 Double_t par1, Double_t par2)
+{
   //
   //
-  NDRegression *corr =
-      (NDRegression *)fgVisualCorrection->At(index);
+  NDRegression* corr =
+    (NDRegression*)fgVisualCorrection->At(index);
   if (!corr)
     return 0;
   Double_t par[3] = {par0, par1, par2};
@@ -573,11 +575,12 @@ Double_t NDRegression::GetCorrND(Double_t index, Double_t par0,
 }
 
 Double_t NDRegression::GetCorrNDError(Double_t index, Double_t par0,
-                                              Double_t par1, Double_t par2) {
+                                      Double_t par1, Double_t par2)
+{
   //
   //
-  NDRegression *corr =
-      (NDRegression *)fgVisualCorrection->At(index);
+  NDRegression* corr =
+    (NDRegression*)fgVisualCorrection->At(index);
   if (!corr)
     return 0;
   Double_t par[3] = {par0, par1, par2};
@@ -585,12 +588,13 @@ Double_t NDRegression::GetCorrNDError(Double_t index, Double_t par0,
 }
 
 Double_t NDRegression::GetCorrND(Double_t index, Double_t par0,
-                                         Double_t par1, Double_t par2,
-                                         Double_t par3) {
+                                 Double_t par1, Double_t par2,
+                                 Double_t par3)
+{
   //
   //
-  NDRegression *corr =
-      (NDRegression *)fgVisualCorrection->At(index);
+  NDRegression* corr =
+    (NDRegression*)fgVisualCorrection->At(index);
   if (!corr)
     return 0;
   Double_t par[4] = {par0, par1, par2, par3};
@@ -598,20 +602,21 @@ Double_t NDRegression::GetCorrND(Double_t index, Double_t par0,
 }
 
 Double_t NDRegression::GetCorrNDError(Double_t index, Double_t par0,
-                                              Double_t par1, Double_t par2,
-                                              Double_t par3) {
+                                      Double_t par1, Double_t par2,
+                                      Double_t par3)
+{
   //
   //
-  NDRegression *corr =
-      (NDRegression *)fgVisualCorrection->At(index);
+  NDRegression* corr =
+    (NDRegression*)fgVisualCorrection->At(index);
   if (!corr)
     return 0;
   Double_t par[4] = {par0, par1, par2, par3};
   return corr->EvalError(par);
 }
 
-
-Double_t NDRegression::Eval(Double_t *point) {
+Double_t NDRegression::Eval(Double_t* point)
+{
   //
   //
   //
@@ -645,10 +650,10 @@ Double_t NDRegression::Eval(Double_t *point) {
   fHistPoints->GetBinContent(ibin, fBinIndex);
   for (Int_t idim = 0; idim < fNParameters; idim++) {
     fBinCenter[idim] =
-        fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
+      fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
     fBinWidth[idim] = fHistPoints->GetAxis(idim)->GetBinWidth(fBinIndex[idim]);
   }
-  TVectorD &vecParam = *((TVectorD *)fLocalFitParam->At(ibin));
+  TVectorD& vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
   Double_t value = vecParam[0];
   if (!rangeOK)
     return value;
@@ -656,19 +661,20 @@ Double_t NDRegression::Eval(Double_t *point) {
     for (Int_t ipar = 0; ipar < fNParameters; ipar++) {
       Double_t delta = (point[ipar] - fBinCenter[ipar]) / fBinWidth[ipar];
       value +=
-          (vecParam[1 + 2 * ipar] + vecParam[1 + 2 * ipar + 1] * delta) * delta;
+        (vecParam[1 + 2 * ipar] + vecParam[1 + 2 * ipar + 1] * delta) * delta;
     }
   } else {
     for (Int_t ipar = 0; ipar < fNParameters; ipar++) {
       Double_t delta = (point[ipar] - fBinCenter[ipar]);
       value +=
-          (vecParam[1 + 2 * ipar] + vecParam[1 + 2 * ipar + 1] * delta) * delta;
+        (vecParam[1 + 2 * ipar] + vecParam[1 + 2 * ipar + 1] * delta) * delta;
     }
   }
   return value;
 }
 
-Double_t NDRegression::EvalError(Double_t *point) {
+Double_t NDRegression::EvalError(Double_t* point)
+{
   //
   //
   //
@@ -690,11 +696,10 @@ Double_t NDRegression::EvalError(Double_t *point) {
   fHistPoints->GetBinContent(ibin, fBinIndex);
   for (Int_t idim = 0; idim < fNParameters; idim++) {
     fBinCenter[idim] =
-        fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
+      fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
   }
-  TMatrixD &vecCovar = *((TMatrixD *)fLocalFitCovar->At(ibin));
+  TMatrixD& vecCovar = *((TMatrixD*)fLocalFitCovar->At(ibin));
   // TVectorD &vecQuality = *((TVectorD*)fLocalFitQuality->At(ibin));
   Double_t value = TMath::Sqrt(vecCovar(0, 0)); // fill covariance to be used
   return value;
 }
-

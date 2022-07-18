@@ -100,7 +100,6 @@ void PlotData(TH1F* hData, TString xTitle = "xTitle", TString yTitle = "yTitle",
   }
 }
 
-
 BOOST_AUTO_TEST_CASE(NDRegression2DIdeal_test)
 {
   auto pfitNDIdeal = make_unique<NDRegression>("pfitNDIdeal", "pfitNDIdeal");
@@ -168,7 +167,6 @@ BOOST_AUTO_TEST_CASE(NDRegression2DIdeal_test)
   pfitNDIdeal->SetStreamer(pcstreamOutIdeal);
   pfitNDIdeal2->SetStreamer(pcstreamOutIdeal2);
 
-  
   success = pfitNDIdeal->SetHistogram((THn*)((hN->Clone())));
   BOOST_CHECK(success);
   success = pfitNDIdeal2->SetHistogram((THn*)((hN->Clone())));
@@ -176,55 +174,53 @@ BOOST_AUTO_TEST_CASE(NDRegression2DIdeal_test)
 
   success = pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1", "Entry$%2==1", "0.02:0.02", "2:2", 0.0001);
   BOOST_CHECK(success);
-  success = pfitNDIdeal2->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.08:0.08","2:2",0.0001);  // sample Gaussian1
+  success = pfitNDIdeal2->MakeFit(treeIn, "val:err", "xyz0:xyz1", "Entry$%2==1", "0.08:0.08", "2:2", 0.0001); // sample Gaussian1
   BOOST_CHECK(success);
 
   std::cout << "Now drawing...\n";
 
-  pfitNDIdeal->AddVisualCorrection(pfitNDIdeal.get(),1);
-  pfitNDIdeal2->AddVisualCorrection(pfitNDIdeal2.get(),2);
+  pfitNDIdeal->AddVisualCorrection(pfitNDIdeal.get(), 1);
+  pfitNDIdeal2->AddVisualCorrection(pfitNDIdeal2.get(), 2);
 
-  TObjArray * array = NDRegression::GetVisualCorrections();
-  for (Int_t i=0; i<array->GetEntries(); i++){
-    NDRegression * regression = ( NDRegression *)array->At(i);
-    if (regression==NULL) continue;
+  TObjArray* array = NDRegression::GetVisualCorrections();
+  for (Int_t i = 0; i < array->GetEntries(); i++) {
+    NDRegression* regression = (NDRegression*)array->At(i);
+    if (regression == NULL)
+      continue;
     regression->AddVisualCorrection(regression);
     Int_t hashIndex = regression->GetVisualCorrectionIndex();
-    treeIn->SetAlias( regression->GetName(), TString::Format("o2::nd_regression::NDRegression::GetCorrND(%d,xyz0,xyz1+0)",hashIndex).Data());
+    treeIn->SetAlias(regression->GetName(), TString::Format("o2::nd_regression::NDRegression::GetCorrND(%d,xyz0,xyz1+0)", hashIndex).Data());
   }
   pcstreamOutIdeal.reset();
   pcstreamOutIdeal2.reset();
   std::cout << "Entries: " << array->GetEntries() << std::endl;
 
-  
-  TCanvas * canvasIdeal = new TCanvas("canvasIdeal","canvasIdeal",800,800);
-  treeIn->Draw("val>>inputData(71,-1.1,2.1)","","");
-  TH1F   *inputData = (TH1F*)gPad->GetPrimitive("inputData");
-  treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(1,xyz0,xyz1))>>ideal(71,-1.1,2.1)","","");
+  TCanvas* canvasIdeal = new TCanvas("canvasIdeal", "canvasIdeal", 800, 800);
+  treeIn->Draw("val>>inputData(71,-1.1,2.1)", "", "");
+  TH1F* inputData = (TH1F*)gPad->GetPrimitive("inputData");
+  treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(1,xyz0,xyz1))>>ideal(71,-1.1,2.1)", "", "");
   // treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(3,xyz0,xyz1)-o2::nd_regression::NDRegression::GetCorrND(2,xyz0,xyz1))/sqrt(o2::nd_regression::NDRegression::GetCorrNDError(3,xyz0,xyz1)**2+o2::nd_regression::NDRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>ideal(401,-20.5,20.5)","","");
-  TH1F   *ideal = (TH1F*)gPad->GetPrimitive("ideal");
+  TH1F* ideal = (TH1F*)gPad->GetPrimitive("ideal");
   Double_t meanIdeal = treeIn->GetHistogram()->GetMean();
   Double_t meanIdealErr = treeIn->GetHistogram()->GetMeanError();
   Double_t rmsIdeal = treeIn->GetHistogram()->GetRMS();
   Double_t rmsIdealErr = treeIn->GetHistogram()->GetRMSError();
-  if (TMath::Abs(meanIdeal) <10*meanIdealErr) {
-    ::Info( "NDRegression2DIdealTest","mean pull OK %3.3f\t+-%3.3f", meanIdeal, meanIdealErr);
-  }else{
-    ::Error( "NDRegressionTest","mean pull NOT OK %3.3f\t+-%3.3f", meanIdeal, meanIdealErr);
+  if (TMath::Abs(meanIdeal) < 10 * meanIdealErr) {
+    ::Info("NDRegression2DIdealTest", "mean pull OK %3.3f\t+-%3.3f", meanIdeal, meanIdealErr);
+  } else {
+    ::Error("NDRegressionTest", "mean pull NOT OK %3.3f\t+-%3.3f", meanIdeal, meanIdealErr);
   }
-  if (rmsIdeal<1+rmsIdealErr) {
-    ::Info( "NDRegressionTest"," rms pull OK %3.3f\t+-%3.3f", rmsIdeal, rmsIdealErr);
-  }else{
-    ::Error( "NDRegressionTest"," rms pull NOT OK %3.3f\t+-%3.3f", rmsIdeal, rmsIdealErr);
+  if (rmsIdeal < 1 + rmsIdealErr) {
+    ::Info("NDRegressionTest", " rms pull OK %3.3f\t+-%3.3f", rmsIdeal, rmsIdealErr);
+  } else {
+    ::Error("NDRegressionTest", " rms pull NOT OK %3.3f\t+-%3.3f", rmsIdeal, rmsIdealErr);
   }
-  treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(2,xyz0,xyz1))>>ideal2(71,-1.1,2.1)","","");
-  TH1F   *ideal2 = (TH1F*)gPad->GetPrimitive("ideal2");
-  
-  
-  
+  treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(2,xyz0,xyz1))>>ideal2(71,-1.1,2.1)", "", "");
+  TH1F* ideal2 = (TH1F*)gPad->GetPrimitive("ideal2");
+
   inputData->Draw("same");
-  PlotData(ideal,"Ideal","counts (arb. units)",kRed+2,"zTitle",rmsIdeal,rmsIdealErr,meanIdeal,meanIdealErr);
-  PlotData(ideal2,"Ideal","counts (arb. units)",kGreen+2,"zTitle");
+  PlotData(ideal, "Ideal", "counts (arb. units)", kRed + 2, "zTitle", rmsIdeal, rmsIdealErr, meanIdeal, meanIdealErr);
+  PlotData(ideal2, "Ideal", "counts (arb. units)", kGreen + 2, "zTitle");
   canvasIdeal->SaveAs("NDRegressionTest.canvasIdealTest.png");
 
   inpf.Close();
