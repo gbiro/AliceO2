@@ -162,54 +162,51 @@ BOOST_AUTO_TEST_CASE(NDRegression2DGaus_test)
 
   pfitNDGaus0->SetStreamer(pcstreamOutGaus0);
 
-  
   success = pfitNDGaus0->SetHistogram((THn*)((hN->Clone())));
   BOOST_CHECK(success);
 
-  success = pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.02:0.02","2:2",0.0001);  // sample Gaussian1
+  success = pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1", "Entry$%2==1", "0.02:0.02", "2:2", 0.0001); // sample Gaussian1
   BOOST_CHECK(success);
 
   std::cout << "Now drawing...\n";
 
-  pfitNDGaus0->AddVisualCorrection(pfitNDGaus0.get(),1);
+  pfitNDGaus0->AddVisualCorrection(pfitNDGaus0.get(), 1);
 
-  TObjArray * array = NDRegression::GetVisualCorrections();
-  for (Int_t i=0; i<array->GetEntries(); i++){
-    NDRegression * regression = ( NDRegression *)array->At(i);
-    if (regression==NULL) continue;
+  TObjArray* array = NDRegression::GetVisualCorrections();
+  for (Int_t i = 0; i < array->GetEntries(); i++) {
+    NDRegression* regression = (NDRegression*)array->At(i);
+    if (regression == NULL)
+      continue;
     regression->AddVisualCorrection(regression);
     Int_t hashIndex = regression->GetVisualCorrectionIndex();
-    treeIn->SetAlias( regression->GetName(), TString::Format("o2::nd_regression::NDRegression::GetCorrND(%d,xyz0,xyz1+0)",hashIndex).Data());
+    treeIn->SetAlias(regression->GetName(), TString::Format("o2::nd_regression::NDRegression::GetCorrND(%d,xyz0,xyz1+0)", hashIndex).Data());
   }
   pcstreamOutGaus0.reset();
   std::cout << "Entries: " << array->GetEntries() << std::endl;
 
-  
-  TCanvas * canvasGaus = new TCanvas("canvasGaus","canvasGaus",800,800);
-  treeIn->Draw("val>>inputData(71,-1.1,2.1)","","");
-  TH1F   *inputData = (TH1F*)gPad->GetPrimitive("inputData");
-  treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(1,xyz0,xyz1))>>gaus(71,-1.1,2.1)","","");
+  TCanvas* canvasGaus = new TCanvas("canvasGaus", "canvasGaus", 800, 800);
+  treeIn->Draw("val>>inputData(71,-1.1,2.1)", "", "");
+  TH1F* inputData = (TH1F*)gPad->GetPrimitive("inputData");
+  treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(1,xyz0,xyz1))>>gaus(71,-1.1,2.1)", "", "");
   // treeIn->Draw("(o2::nd_regression::NDRegression::GetCorrND(3,xyz0,xyz1)-o2::nd_regression::NDRegression::GetCorrND(2,xyz0,xyz1))/sqrt(o2::nd_regression::NDRegression::GetCorrNDError(3,xyz0,xyz1)**2+o2::nd_regression::NDRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>ideal(401,-20.5,20.5)","","");
-  TH1F   *gaus = (TH1F*)gPad->GetPrimitive("gaus");
+  TH1F* gaus = (TH1F*)gPad->GetPrimitive("gaus");
   Double_t meanGaus = treeIn->GetHistogram()->GetMean();
   Double_t meanGausErr = treeIn->GetHistogram()->GetMeanError();
   Double_t rmsGaus = treeIn->GetHistogram()->GetRMS();
   Double_t rmsGausErr = treeIn->GetHistogram()->GetRMSError();
-  if (TMath::Abs(meanGaus) <10*meanGausErr) {
-    ::Info( "NDRegression2DGausTest","mean pull OK %3.3f\t+-%3.3f", meanGaus, meanGausErr);
-  }else{
-    ::Error( "NDRegressionTest","mean pull NOT OK %3.3f\t+-%3.3f", meanGaus, meanGausErr);
+  if (TMath::Abs(meanGaus) < 10 * meanGausErr) {
+    ::Info("NDRegression2DGausTest", "mean pull OK %3.3f\t+-%3.3f", meanGaus, meanGausErr);
+  } else {
+    ::Error("NDRegressionTest", "mean pull NOT OK %3.3f\t+-%3.3f", meanGaus, meanGausErr);
   }
-  if (rmsGaus<1+rmsGausErr) {
-    ::Info( "NDRegressionTest"," rms pull OK %3.3f\t+-%3.3f", rmsGaus, rmsGausErr);
-  }else{
-    ::Error( "NDRegressionTest"," rms pull NOT OK %3.3f\t+-%3.3f", rmsGaus, rmsGausErr);
+  if (rmsGaus < 1 + rmsGausErr) {
+    ::Info("NDRegressionTest", " rms pull OK %3.3f\t+-%3.3f", rmsGaus, rmsGausErr);
+  } else {
+    ::Error("NDRegressionTest", " rms pull NOT OK %3.3f\t+-%3.3f", rmsGaus, rmsGausErr);
   }
-  
-  
-  
+
   inputData->Draw("same");
-  PlotData(gaus,"Gaus","counts (arb. units)",kRed+2,"zTitle",rmsGaus,rmsGausErr,meanGaus,meanGausErr);
+  PlotData(gaus, "Gaus", "counts (arb. units)", kRed + 2, "zTitle", rmsGaus, rmsGausErr, meanGaus, meanGausErr);
   canvasGaus->SaveAs("NDRegressionTest.canvasGausTest.png");
 
   inpf.Close();
